@@ -1,0 +1,15 @@
+{
+    "tables": {
+        "customer": {
+            "table_name": "customer",
+            "query": "(SELECT * FROM customer ) AS customer"
+        }
+        
+    }
+}
+
+
+
+
+
+
