@@ -33,3 +33,18 @@ $ pip install -r requirements.txt
 ```
 jupyter-notebook
 ```
+
+5. Populate postgres db 
+```
+docker exec -i postgres-container psql -U postgres -d postgres < .\chinook.sql
+```
+
+6. Create casandra tables
+
+```
+cat .\schema.cql | docker exec -i cassandra-container cqlsh
+```
+
+
+## Postgres database sample
+The sample PostgreSQL database schema is sourced from [morenoh149/postgresDBSamples](https://github.com/morenoh149/postgresDBSamples.git).
