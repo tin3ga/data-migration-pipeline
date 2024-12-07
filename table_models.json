@@ -2,7 +2,11 @@
     "tables": {
         "customer": {
             "table_name": "customer",
-            "query": "(SELECT * FROM customer ) AS customer"
+            "query": "(SELECT c.country,c.customer_id,c.first_name,c.last_name,c.company,c.address,c.city,c.state,c.postal_code,c.phone,c.fax,c.email, e.first_name as support_rep FROM customer c INNER JOIN employee e ON c.support_rep_id = e.employee_id ) AS customer"
+        },
+        "track": {
+            "table_name": "track",
+            "query": "(SELECT a.title as album,t.track_id,t.name,m.name as media_type,g.name as genre,composer,milliseconds,bytes,unit_price FROM track t INNER JOIN album a ON t.album_id=a.album_id INNER JOIN media_type m ON t.media_type_id=m.media_type_id INNER JOIN genre g ON t.genre_id=g.genre_id) AS track"
         }
         
     }
