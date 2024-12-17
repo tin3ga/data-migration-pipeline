@@ -1,6 +1,7 @@
 import logging
 import json
 from json import JSONDecodeError
+import asyncio
 
 logging.basicConfig(level=logging.INFO)
 lgr = logging.getLogger(__name__)
@@ -43,3 +44,41 @@ def write_to_cassandra(df, cassandra_table, postgres_table, keyspace) -> bool:
     except Exception as e:
         lgr.error(f"Error encountered when writing data from {postgres_table} into keyspace {keyspace}: {e}")
         return False
+    
+async def process_table(cassandra_table, table_details, spark, psql_server, psql_port, psql_dbname, psql_username, psql_password, keyspace):
+    postgres_table = table_details['table_name']
+    query = table_details['query']
+    
+    df = await asyncio.to_thread(
+        load_to_spark,
+        spark=spark,
+        sql_query=query,
+        psql_server=psql_server,
+        psql_dbname=psql_dbname,
+        psql_port=psql_port,
+        psql_username=psql_username,
+        psql_password=psql_password
+    )
+    
+    write_successful = await asyncio.to_thread(
+        write_to_cassandra,
+        df=df,
+        cassandra_table=cassandra_table,
+        postgres_table=postgres_table,
+        keyspace=keyspace
+    )
+    return (postgres_table, write_successful)
+
+async def main_script(table_mappings, spark, psql_server, psql_port, psql_dbname, psql_username, psql_password, keyspace):
+    load_successful = [] # a list to keep track of table load status 
+
+    tasks = []
+
+    for cassandra_table, table_details in table_mappings.items():
+        tasks.append(process_table(cassandra_table, table_details, spark, psql_server, psql_port, psql_dbname, psql_username, psql_password, keyspace))
+
+    results = await asyncio.gather(*tasks)
+
+    load_successful.extend(results)
+
+    return load_successful
